@@ -84,11 +84,16 @@ async def get_sub_queries(query, agent_role_prompt, cfg):
 
     """
     max_research_iterations = cfg.max_iterations if cfg.max_iterations else 1
+    if cfg.retriever == "arxiv":
+        prompt = generate_search_arxiv_prompt(query, max_iterations=max_research_iterations)
+    else:
+        prompt = generate_search_queries_prompt(query, max_iterations=max_research_iterations)
+
     response = await create_chat_completion(
         model=cfg.smart_llm_model,
         messages=[
             {"role": "system", "content": f"{agent_role_prompt}"},
-            {"role": "user", "content": generate_search_queries_prompt(query, max_iterations=max_research_iterations)}],
+            {"role": "user", "content": prompt}],
         temperature=0,
         llm_provider=cfg.llm_provider
     )
