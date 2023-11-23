@@ -35,6 +35,9 @@ def get_retriever(retriever):
         case "duckduckgo":
             from gpt_researcher.retrievers import Duckduckgo
             retriever = Duckduckgo
+        case "arxiv":
+            from gpt_researcher.retrievers import ArxivSearch
+            retriever = ArxivSearch
 
         case _:
             raise Exception("Retriever not found.")

@@ -30,13 +30,25 @@ class ContextCompressor:
         )
         return contextual_retriever
 
-    def _pretty_print_docs(self, docs, top_n):
+    def _pretty_print_docs(self, docs, top_n, arxiv_search: bool=False):
+        try:
+            if arxiv_search:
+                return f"\n".join(
+                            f"Title: {d.metadata.get('title')}\n"
+                            f"Url: {d.metadata.get('source')}\n"
+                            f"Published at: {d.metadata.get('date')}\n"
+                            f"Published by: {d.metadata.get('authors')}\n"
+                            f"Content: {d.page_content}\n"
+                          for i, d in enumerate(docs) if i < top_n)
+        except KeyError:
+            pass
+        
         return f"\n".join(f"Source: {d.metadata.get('source')}\n"
                           f"Title: {d.metadata.get('title')}\n"
                           f"Content: {d.page_content}\n"
                           for i, d in enumerate(docs) if i < top_n)
 
-    def get_context(self, query, max_results=5):
+    def get_context(self, query, max_results=5, arxiv_search: bool=False):
         compressed_docs = self._get_contextual_retriever()
         relevant_docs = compressed_docs.get_relevant_documents(query)
-        return self._pretty_print_docs(relevant_docs, max_results)
+        return self._pretty_print_docs(relevant_docs, max_results, arxiv_search)

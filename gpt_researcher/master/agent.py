@@ -42,16 +42,17 @@ class GPTResearcher:
 
         # Generate Sub-Queries including original query
         sub_queries = await get_sub_queries(self.query, self.role, self.cfg) + [self.query]
+        sub_queries_str = "\n".join(sub_queries)
         await stream_output("logs",
-                            f"🧠 I will conduct my research based on the following queries: {sub_queries}...",
+                            f"🧠 I will conduct my research based on the following queries:\n{sub_queries_str}",
                             self.websocket)
 
         # Run Sub-Queries
         for sub_query in sub_queries:
-            await stream_output("logs", f"\n🔎 Running research for '{sub_query}'...", self.websocket)
+            await stream_output("logs", f"🔎 Running research for '{sub_query}'...", self.websocket)
             scraped_sites = await self.scrape_sites_by_query(sub_query)
             context = await self.get_similar_content_by_query(sub_query, scraped_sites)
-            await stream_output("logs", f"📃 {context}", self.websocket)
+            await stream_output("logs", f"📃 Matching Contex for the query:\n{context}", self.websocket)
             self.context.append(context)
         # Conduct Research
         await stream_output("logs", f"✍️ Writing {self.report_type} for research task: {self.query}...", self.websocket)
@@ -88,13 +89,18 @@ class GPTResearcher:
         """
         # Get Urls
         retriever = self.retriever(sub_query)
-        search_results = retriever.search(max_results=self.cfg.max_search_results_per_query)
-        new_search_urls = await self.get_new_urls([url.get("href") for url in search_results])
-
-        # Scrape Urls
-        # await stream_output("logs", f"📝Scraping urls {new_search_urls}...\n", self.websocket)
         await stream_output("logs", f"🤔Researching for relevant information...\n", self.websocket)
-        scraped_content_results = scrape_urls(new_search_urls, self.cfg)
+
+        if self.cfg.retriever == "arxiv":
+            search_results = retriever.search(max_results=self.cfg.max_search_results_per_query)
+            scraped_content_results = retriever.generate_content(search_results)
+        else:
+            search_results = retriever.search(max_results=self.cfg.max_search_results_per_query)
+            new_search_urls = await self.get_new_urls([url.get("href") for url in search_results])
+
+            # Scrape Urls
+            # await stream_output("logs", f"📝Scraping urls {new_search_urls}...\n", self.websocket)
+            scraped_content_results = scrape_urls(new_search_urls, self.cfg)
         return scraped_content_results
 
     async def get_similar_content_by_query(self, query, pages):
@@ -102,5 +108,10 @@ class GPTResearcher:
         # Summarize Raw Data
         context_compressor = ContextCompressor(documents=pages, embeddings=self.memory.get_embeddings())
         # Run Tasks
-        return context_compressor.get_context(query, max_results=8)
+        if self.cfg.retriever == "arxiv":
+            is_arxiv_search = True
+        else:
+            is_arxiv_search = False
+
+        return context_compressor.get_context(query, max_results=8,arxiv_search= is_arxiv_search)
 
