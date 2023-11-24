@@ -57,14 +57,14 @@ const GPTResearcher = (() => {
     output.scrollTop = output.scrollHeight;
     output.style.display = "block";
     output.style.whiteSpace = "pre-wrap"
-    updateScroll();
+    //updateScroll();
   };
 
   const writeReport = (data, converter) => {
     const reportContainer = document.getElementById("reportContainer");
     const markdownOutput = converter.makeHtml(data.output);
     reportContainer.innerHTML += markdownOutput;
-    updateScroll();
+    //updateScroll();
   };
 
   const updateDownloadLink = (data) => {

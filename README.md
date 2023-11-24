@@ -61,7 +61,8 @@ Please see [here](https://docs.tavily.com/docs/gpt-researcher/getting-started) f
 - Reference (full API docs)
 - Tavily API integration (high-level explanation of core concepts)
 
-## Quickstart
+## Quickstart: Uvicorn or Docker
+# Uvicorn
 > **Step 0** - Install Python 3.11 or later. [See here](https://www.tutorialsteacher.com/python/install-python) for a step-by-step guide.
 
 <br />
@@ -75,14 +76,36 @@ $ cd gpt-researcher
 
 <br />
 
-> **Step 2** - Install dependencies
+> **Step 2** - Create virtual env
+For with anaconda or venv, in this example we will use python venv, the active statement might vary depending on your os.
+```bash
+$ python -m venv <name of the virtual enviorement>
+$ .\venv\Scripts\activate
+```
+See here for more info: https://docs.python.org/3/library/venv.html
+<br />
+
+> **Step 3** - Install dependencies
 ```bash
 $ pip install -r requirements.txt
 ```
 <br />
 
-> **Step 3** - Create .env file with your OpenAI Key and Tavily API key or simply export it
+> **Step 4** - Create .env file with your OpenAI Key and Tavily API key or simply export it
+create a .env file in the top folder and set the following parameters:
+```bash
+OPENAI_API_KEY=<openai api key>
+```
 
+Optional:
+```bash
+LANGCHAIN_API_KEY=<langchain api key>
+TAVILY_API_KEY=<tavily API Key>
+```
+Langchain for Langsmith tracking.
+Tavily if you want the tool to use tavily for the research.
+
+Or export them:
 ```bash
 $ export OPENAI_API_KEY={Your OpenAI API Key here}
 ```
@@ -99,13 +122,54 @@ $ export TAVILY_API_KEY={Your Tavily API Key here}
 > **Step 4** - Run the agent with FastAPI
 
 ```bash
-$ uvicorn main:app --reload
+$ uvicorn main:app --reload --env-file .env
 ```
 <br />
 
 > **Step 5** - Go to http://localhost:8000 on any browser and enjoy researching!
 
-To learn how to get started with Docker or to learn more about the features and services check out the [documentation](https://docs.tavily.com) page.
+# Docker
+
+> **Step 1** - Install Docker 
+
+Follow instructions at https://docs.docker.com/engine/install/
+<br />
+
+> **Step 2** - Create .env file with your OpenAI Key and Tavily API key
+create a .env file in the top folder and set the following parameters:
+```bash
+OPENAI_API_KEY=<openai api key>
+```
+
+Optional:
+```bash
+LANGCHAIN_API_KEY=<langchain api key>
+TAVILY_API_KEY=<tavily API Key>
+```
+Langchain for Langsmith tracking.
+Tavily if you want the tool to use tavily for the research.
+<br />
+
+> **Step 3** -  Run the application
+```bash
+$ docker-compose up
+```
+<br />
+
+> **Step 5** - Go to http://localhost:8000 on any browser and enjoy researching!
+
+
+Follow instructions at https://docs.docker.com/engine/install/
+
+## Configuration
+What do the config values do:
+
+retriever: Choose the retriever you want to use. We are currently using arxiv for a search on arxiv only.
+temperature: doesnt change anything as its 0 for everything anyways.
+report format: the format of the returned report, currently apa.
+max iterations: number of search queries to create
+max_search_results_per_query: number of results per query -> max of total results = (max_iterations + 1) * max_search_results_per_query. (+1 bc it uses the initial question as search query)
+total_words: is the minimum number of words the model should write in the report.
 
 ## 🚀 Contributing
 We highly welcome contributions! Please check out [contributing](CONTRIBUTING.md) if you're interested.

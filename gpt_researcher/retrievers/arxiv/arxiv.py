@@ -7,7 +7,7 @@ class ArxivSearch:
     ArxivSearch API Retriever
     """
     def __init__(self, query):
-        self.arx_ret = ArxivRetriever(load_all_available_meta=True, load_max_docs=3)
+        self.arx_ret = ArxivRetriever(load_all_available_meta=True, load_max_docs=50)
         self.query = query
 
     def search(self, max_results=5):
@@ -17,7 +17,7 @@ class ArxivSearch:
         :param max_results:
         :return:
         """
-        self.arx_ret.load_max_docs = max_results
+        self.arx_ret.top_k_results = max_results
         arx_gen = self.arx_ret.get_summaries_as_docs(self.query)
         
         output = []
